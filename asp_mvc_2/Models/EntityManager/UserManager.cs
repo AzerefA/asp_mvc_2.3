@@ -4,13 +4,14 @@ using System.Linq;
 using System.Web;
 using asp_mvc_2.Models.DB;
 using asp_mvc_2.Models.ViewModel;
-using System.Collections.Generic;
+
 
 namespace asp_mvc_2.Models.EntityManager
 {
     public class UserManager
     {
-        public void AddUserAccount(UserModel user) {
+        public void AddUserAccount(UserSignUpView user)
+        {
             using (DemoDBEntities2 db = new DemoDBEntities2())
             {
                 SYSUser SU = new SYSUser();
@@ -20,10 +21,8 @@ namespace asp_mvc_2.Models.EntityManager
                 SU.RowModifiedSYSUserID = user.SYSUserID > 0 ? user.SYSUserID : 1; ;
                 SU.RowCreatedDateTime = DateTime.Now;
                 SU.RowMOdifiedDateTime = DateTime.Now;
-
                 db.SYSUsers.Add(SU);
                 db.SaveChanges();
-
                 SYSUserProfile SUP = new SYSUserProfile();
                 SUP.SYSUserID = SU.SYSUserID;
                 SUP.FirtsName = user.FirstName;
@@ -33,35 +32,33 @@ namespace asp_mvc_2.Models.EntityManager
                 SUP.RowModifiedSYSUserID = user.SYSUserID > 0 ? user.SYSUserID : 1;
                 SUP.RowCreatedDateTime = DateTime.Now;
                 SUP.RowModifiedDateTime = DateTime.Now;
-
                 db.SYSUserProfiles.Add(SUP);
                 db.SaveChanges();
-
-
-                if (user.LOOKUPRoleID > 0) {
+                if (user.LOOKUPRoleID > 0)
+                {
                     SYSUserRole SUR = new SYSUserRole();
                     SUR.LOOKUPRoleID = user.LOOKUPRoleID;
                     SUR.SYSUserID = user.SYSUserID;
                     SUR.IsActive = true;
-                    SUR.RowCreatedSYSUserID = user.SYSUserID > 0 ? user.SYSUserID :1;
-                    SUR.RowModifiedSYSUserID = user.SYSUserID > 0 ? user.SYSUserID :1;
+                    SUR.RowCreatedSYSUserID = user.SYSUserID > 0 ? user.SYSUserID :
+                    1;
+                    SUR.RowModifiedSYSUserID = user.SYSUserID > 0 ? user.SYSUserID :
+                    1;
                     SUR.RowCreatedDateTime = DateTime.Now;
                     SUR.RowModifiedDateTime = DateTime.Now;
-
                     db.SYSUserRoles.Add(SUR);
                     db.SaveChanges();
-
-                } 
-
+                }
             }
-
-        } public bool IsLoginNameExist(String loginName) {
+        }
+        public bool IsLoginNameExist(string loginName)
+        {
             using (DemoDBEntities2 db = new DemoDBEntities2())
             {
                 return db.SYSUsers.Where(o => o.LoginName.Equals(loginName)).Any();
             }
-
         }
+
         public string GetUserPassword(string loginName)
         {
             using (DemoDBEntities2 db = new DemoDBEntities2())
@@ -78,7 +75,7 @@ namespace asp_mvc_2.Models.EntityManager
         {
             using (DemoDBEntities2 db = new DemoDBEntities2())
             {
-                SYSUser SU = db.SYSUsers.Where(o =>o.LoginName.ToLower().Equals(loginName))?.FirstOrDefault();
+                SYSUser SU = db.SYSUsers.Where(o => o.LoginName.ToLower().Equals(loginName))?.FirstOrDefault();
                 if (SU != null)
                 {
                     var roles = from q in db.SYSUserRoles
@@ -181,26 +178,21 @@ namespace asp_mvc_2.Models.EntityManager
             genders.Add(new Gender { Text = "Female", Value = "F" });
 
             UDV.UserProfile = profiles;
-            UDV.UserRoles = new UserRoles
-            {
-               SelectedRoleID = userAssignedRoleID,UserRoleList= roles
-            };
-            UDV.UserGender = new UserGender
-            {
-                SelectedGender = userGender,
-                Gender = genders
-            };
+            UDV.UserRoles = new UserRoles { SelectedRoleID = userAssignedRoleID, UserRoleList = roles };
+            UDV.UserGender = new UserGender { SelectedGender = userGender, Gender = genders };
             return UDV;
         }
 
         public void UpdateUserAccount(UserProfileView user)
         {
-          using (DemoDBEntities2 db =new DemoDBEntities2())
-          {
-            using (var dbContextTransaction = db.Database.BeginTransaction())
+
+            using (DemoDBEntities2 db = new DemoDBEntities2())
             {
+                using (var dbContextTransaction = db.Database.BeginTransaction())
+                {
                     try
                     {
+
                         SYSUser SU = db.SYSUsers.Find(user.SYSUserID);
                         SU.LoginName = user.LoginName;
                         SU.PasswordEncryptedText = user.Password;
@@ -210,7 +202,6 @@ namespace asp_mvc_2.Models.EntityManager
                         SU.RowMOdifiedDateTime = DateTime.Now;
 
                         db.SaveChanges();
-
 
                         var userProfile = db.SYSUserProfiles.Where(o => o.SYSUserID == user.SYSUserID);
                         if (userProfile.Any())
@@ -256,6 +247,7 @@ namespace asp_mvc_2.Models.EntityManager
                                 db.SYSUserRoles.Add(SUR);
                             }
 
+
                             db.SaveChanges();
                         }
                         dbContextTransaction.Commit();
@@ -265,46 +257,47 @@ namespace asp_mvc_2.Models.EntityManager
                         dbContextTransaction.Rollback();
                     }
                 }
-          }
-      }
-
+            }
+        }
         public void DeleteUser(int userID)
-       {
-           using(DemoDBEntities2 db = new DemoDBEntities2())
-           {
-               using(var dbContextTransaction = db.Database.BeginTransaction())
-               {
-                   try
-                   {
-                       var SUR = db.SYSUserRoles.Where(o => o.SYSUserID == userID);
-                       if (SUR.Any())
-                       {
-                           db.SYSUserRoles.Remove(SUR.FirstOrDefault());
-                           db.SaveChanges();
-                       }
+        {
+            using (DemoDBEntities2 db = new DemoDBEntities2())
+            {
+                using (var dbContextTransaction = db.Database.BeginTransaction())
+                {
+                    try
+                    {
 
-                       var SUP = db.SYSUserProfiles.Where(o => o.SYSUserID == userID);
-                       if (SUP.Any())
-                       {
-                           db.SYSUserProfiles.Remove(SUP.FirstOrDefault());
-                           db.SaveChanges();
-                       }
+                        var SUR = db.SYSUserRoles.Where(o => o.SYSUserID == userID);
+                        if (SUR.Any())
+                        {
+                            db.SYSUserRoles.Remove(SUR.FirstOrDefault());
+                            db.SaveChanges();
+                        }
 
-                       var SU = db.SYSUsers.Where(o => o.SYSUserID == userID);
-                       if (SU.Any())
-                       {
-                           db.SYSUsers.Remove(SU.FirstOrDefault());
-                           db.SaveChanges();
-                       }
-                       dbContextTransaction.Commit();
-                   }
-                   catch
-                   {
-                       dbContextTransaction.Rollback();
-                   }
-               }
-           }
-       }
+                        var SUP = db.SYSUserProfiles.Where(o => o.SYSUserID == userID);
+                        if (SUP.Any())
+                        {
+                            db.SYSUserProfiles.Remove(SUP.FirstOrDefault());
+                            db.SaveChanges();
+                        }
+
+                        var SU = db.SYSUsers.Where(o => o.SYSUserID == userID);
+                        if (SU.Any())
+                        {
+                            db.SYSUsers.Remove(SU.FirstOrDefault());
+                            db.SaveChanges();
+                        }
+
+                        dbContextTransaction.Commit();
+                    }
+                    catch
+                    {
+                        dbContextTransaction.Rollback();
+                    }
+                }
+            }
+        }
     }
 }
     

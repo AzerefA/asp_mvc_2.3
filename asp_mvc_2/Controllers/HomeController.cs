@@ -12,14 +12,13 @@ namespace asp_mvc_2.Controllers
 {
     public class HomeController : Controller
     {
-        // GET: Home
         public ActionResult Index()
         {
             return View();
         }
-
         [Authorize]
-        public ActionResult Welcome() {
+        public ActionResult Welcome()
+        {
             return View();
         }
 
@@ -54,11 +53,12 @@ namespace asp_mvc_2.Controllers
 
                 return PartialView(UDV);
             }
+
             return RedirectToAction("Index", "Home");
         }
 
         [AuthorizeRoles("Admin")]
-        public ActionResult UpdateUserData(int userID, String loginName, string password,string firstName,string lastName, string genter, int roleID=0)
+        public ActionResult UpdateUserData(int userID, string loginName, string password, string firstName, string lastName, string gender, int roleID = 0)
         {
             UserProfileView UPV = new UserProfileView();
             UPV.SYSUserID = userID;
@@ -66,17 +66,15 @@ namespace asp_mvc_2.Controllers
             UPV.Password = password;
             UPV.FirstName = firstName;
             UPV.LastName = lastName;
-            UPV.Gender = genter;
+            UPV.Gender = gender;
 
-            if(roleID > 0)
-            
+            if (roleID > 0)
                 UPV.LOOKUPRoleID = roleID;
 
             UserManager UM = new UserManager();
             UM.UpdateUserAccount(UPV);
 
-            return Json(new{succes = true});
-            
+            return Json(new { success = true });
         }
 
         [AuthorizeRoles("Admin")]
